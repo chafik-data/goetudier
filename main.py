@@ -3,12 +3,12 @@ import pandas as pd # With Pandas we do Data Manipulation
 from PIL import Image # With Pillow we open images
 import requests # With Requests we send HTTP Requests to retrieve informations
 from bs4 import BeautifulSoup # With Beautiful Soup we parse and extract info from a Web Page
-from geopy.geocoders import Nominatim # With Geopy we transform City name in Latitude and Longitude
+from geopy.geocoders import BANFrance # With Geopy we transform City name in Latitude and Longitude
 import time # Time
 import plotly.express as px # With plotly we do Data Visualization
 import concurrent.futures # With Concurrent.futures we enable Multithreading
 
-geolocator = Nominatim(user_agent="myApp", timeout=10) # Initialize Geopy
+geolocator = BANFrance(domain='api-adresse.data.gouv.fr') # Initialize Geopy
 
 logo = Image.open('logo.png') # Import logo with Pillow
 data_onisep = pd.read_csv('data_onisep_transformed.csv') # We open the CSV File
@@ -90,7 +90,7 @@ with header: # Initiziale Streamlit container
     # If button is pressed:
     if st.button('Chercher une école'):
 
-        st.text('Scraping en cours... Cela peut prendre quelques minutes...') # Prin text
+        st.text('Scraping en cours..') # Prin text
 
         # Create dataframe with formations
         form = pd.DataFrame(list(zip(nom_f,formations)), columns=['nom','lien'])
@@ -106,16 +106,19 @@ with header: # Initiziale Streamlit container
             for fut in concurrent.futures.as_completed(futures):
                 fut.result()
 
+        start_time = time.time()
+
         # For every city in DF ecoles find Longitude and Latitude
         ecoles[['lat', 'lon']] = ecoles['comune'].apply(geolocator.geocode).apply(lambda x: pd.Series([x.latitude, x.longitude], index=['lat', 'lon']))
+        print("--- %s seconds ---" % (time.time() - start_time))
 
         st.markdown(f'Ecoles pour {str(sel)}')
 
         # Plot scatter map using Mapbox API
         fig = px.scatter_mapbox(ecoles,lat='lat',lon='lon', hover_name="name",hover_data=['cp','comune'] , template='plotly_dark', width=800, height=400)
-        fig.update_geos(fitbounds=False)
         fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
         st.plotly_chart(fig, use_container_width=True)
+
 
     else:
         time.sleep(3)
