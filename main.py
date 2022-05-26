@@ -38,7 +38,7 @@ def download_form(link_formation):
             comune = [i.text for i in comune] # Extract the text from comune
             postal = table.find_all('td',{'data-label':'Code postal'})  # Retrieve info about Code Postal
             postal = [i.text for i in postal] # Extract the text from Postal
-            df2 = pd.DataFrame(list(zip(text,links_final,postal,comune)), columns=['name','link','cap','comune']) # Create Dataframe
+            df2 = pd.DataFrame(list(zip(text,links_final,postal,comune)), columns=['name','link','cp','comune']) # Create Dataframe
         ecoles = pd.concat([ecoles,df2]).reset_index(drop=True) # Append to Dataframe Ecoles new dataframe
     else: # Else scrap one page
         req3 = requests.get(f'https://www.onisep.fr/recherche/api/html?context=where_to_learn&formation={code}&page=1').text
@@ -51,7 +51,7 @@ def download_form(link_formation):
         comune = [i.text for i in comune]
         postal = table.find_all('td',{'data-label':'Code postal'})
         postal = [i.text for i in postal]
-        df2 = pd.DataFrame(list(zip(text,links_final,postal,comune)), columns=['name','link','cap','comune'])
+        df2 = pd.DataFrame(list(zip(text,links_final,postal,comune)), columns=['name','link','cp','comune'])
         ecoles = pd.concat([ecoles,df2]).reset_index(drop=True).drop_duplicates(subset=['link'])
 
     return ecoles # Return dataframe containing all schools
@@ -97,7 +97,7 @@ with header: # Initiziale Streamlit container
         form = form[form['lien'] != 'https://www.onisep.frNone'] # Filter dataframe
         form_l = [x for x in form.lien.values] # Extract formations links
 
-        ecoles = pd.DataFrame(columns=['name','link','cap','comune']) # Initialize empty dataframe
+        ecoles = pd.DataFrame(columns=['name','link','cp','comune']) # Initialize empty dataframe
 
         # Use multithreading to optimize Download Form function
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -112,7 +112,7 @@ with header: # Initiziale Streamlit container
         st.markdown(f'Ecoles pour {str(sel)}')
 
         # Plot scatter map using Mapbox API
-        fig = px.scatter_mapbox(ecoles,lat='lat',lon='lon', hover_name="name",hover_data=['cap','comune'] , template='plotly_dark', width=800, height=400)
+        fig = px.scatter_mapbox(ecoles,lat='lat',lon='lon', hover_name="name",hover_data=['cp','comune'] , template='plotly_dark', width=800, height=400)
         fig.update_geos(fitbounds=False)
         fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
         st.plotly_chart(fig, use_container_width=True)
