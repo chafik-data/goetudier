@@ -18,6 +18,8 @@ dataset = st.container()
 features = st.container()
 model_training = st.container()
 
+px.set_mapbox_access_token('pk.eyJ1IjoicG9yY29kaW9kb3BwaW8iLCJhIjoiY2wzbXJ5M3BoMDducDNpcGJpZDQ0MXhrNCJ9.h5SiHdVMNCLQk2iH_i7Fog')
+
 
 with header:
     st.image(logo)
@@ -98,7 +100,9 @@ with header:
 
         st.markdown(f'Ecoles pour {str(sel)}')
 
-        fig = px.scatter_geo(ecoles,lat='lat',lon='lon', hover_name="name",hover_data=['cap','comune'] , template='plotly_dark', width=800, height=400)
+        fig = px.scatter_mapbox(ecoles,lat='lat',lon='lon', hover_name="name",hover_data=['cap','comune'] , template='plotly_dark', width=800, height=400)
+        fig.update_geos(fitbounds=False)
+        fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
         st.plotly_chart(fig, use_container_width=True)
 
     else:
